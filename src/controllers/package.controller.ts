@@ -1,7 +1,7 @@
 import { CreatePackageDto } from '@/dto/packages.dto';
 import { PackageService } from '@/services/package.service';
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
-import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('packages')
 @Controller('packages')
@@ -31,12 +31,6 @@ export class PackageController {
   @Get('tracking/:trackingNumber')
   getByTrackingNumber(@Param('trackingNumber') trackingNumber: string) {
     return this.packageService.findByTrackingNumber(trackingNumber);
-  }
-
-  @ApiExcludeEndpoint()
-  @Get('raw')
-  getRawData() {
-    return this.packageService.getRawData();
   }
 
   @Post('create')

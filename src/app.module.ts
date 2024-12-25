@@ -12,6 +12,8 @@ import { PackageController } from './controllers/package.controller';
 import { ConfigModule } from '@nestjs/config';
 import config from '@/config/config';
 import { PassportModule } from '@nestjs/passport';
+import { BranchService } from './services/branch.service';
+import { BranchController } from './controllers/branch.controller';
 
 @Module({
   imports: [
@@ -28,11 +30,17 @@ import { PassportModule } from '@nestjs/passport';
     }),
     DatabaseModule,
   ],
-  controllers: [UsersController, AuthController, PackageController],
+  controllers: [
+    UsersController,
+    AuthController,
+    PackageController,
+    BranchController,
+  ],
   providers: [
     UsersService,
     AuthService,
     PackageService,
+    BranchService,
     LocalStrategy,
     JwtStrategy,
   ],
