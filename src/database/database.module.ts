@@ -7,10 +7,13 @@ import { ENTITIES } from './entities';
   imports: [
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
-        type: 'better-sqlite3',
-        database: ':memory:',
+        type: 'postgres',
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.PG_PORT),
+        username: process.env.PG_USER,
+        password: process.env.PG_PASSWORD,
+        database: process.env.PG_DB,
         synchronize: true,
-        logging: false,
         entities: [...ENTITIES],
       }),
     }),
