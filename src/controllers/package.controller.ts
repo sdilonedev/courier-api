@@ -1,4 +1,9 @@
-import { CreatePackageDto } from '@/dto/packages.dto';
+import {
+  CreatePackageDto,
+  CreatePackageLogDto,
+  UpdatePackageLogDto,
+} from '@/dto/packages.dto';
+import { PackageLogService } from '@/services/package-log.service';
 import { PackageService } from '@/services/package.service';
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -6,7 +11,10 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('packages')
 @Controller('packages')
 export class PackageController {
-  constructor(private packageService: PackageService) {}
+  constructor(
+    private packageService: PackageService,
+    private logService: PackageLogService,
+  ) {}
 
   @Get()
   getAll() {
@@ -46,5 +54,30 @@ export class PackageController {
   @Post(':id/delete')
   deletePackage(@Param('id') id: string) {
     return this.packageService.delete(id);
+  }
+
+  @Get('log/:id')
+  getPackageLog(@Param('id') id: string) {
+    return this.logService.findByPackageId(id);
+  }
+
+  @Get('log/latest/:id')
+  getLatestLog(@Param('id') id: string) {
+    return this.logService.getLatestStatus(id);
+  }
+
+  @Post('log')
+  createPackageLog(@Body() dto: CreatePackageLogDto) {
+    return this.logService.create(dto);
+  }
+
+  @Put('log/:id/update')
+  updatePackageLog(@Param('id') id: string, @Body() dto: UpdatePackageLogDto) {
+    return this.logService.update(id, dto);
+  }
+
+  @Post('log/:id/delete')
+  deletePackageLog(@Param('id') id: string) {
+    return this.logService.delete(id);
   }
 }

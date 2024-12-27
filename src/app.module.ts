@@ -14,6 +14,7 @@ import config from '@/config/config';
 import { PassportModule } from '@nestjs/passport';
 import { BranchService } from './services/branch.service';
 import { BranchController } from './controllers/branch.controller';
+import { PackageLogService } from './services/package-log.service';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { BranchController } from './controllers/branch.controller';
     AuthService,
     PackageService,
     BranchService,
+    PackageLogService,
     LocalStrategy,
     JwtStrategy,
   ],

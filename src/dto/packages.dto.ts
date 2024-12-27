@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsNumber, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsEnum,
+  IsDate,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 enum PackageStatus {
@@ -46,3 +52,27 @@ export class CreatePackageDto {
 }
 
 export class UpdatePackageDto extends CreatePackageDto {}
+
+export class CreatePackageLogDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  packageId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  statusDescription: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  location: string;
+
+  @ApiProperty()
+  @IsDate()
+  @IsNotEmpty()
+  timestamp: Date;
+}
+
+export class UpdatePackageLogDto extends CreatePackageLogDto {}
