@@ -1,6 +1,11 @@
+import { BASE_RATE_PER_POUND, FEES, TAX_RATE } from '@/constants';
 import { Package } from '@/database/entities/package.entity';
 import { CreatePackageDto } from '@/dto/packages.dto';
-import { ShipinngDetails } from '@/interfaces/shipping.details';
+import {
+  CostBreakdownItem,
+  ShippingDetails,
+  ShippingCostResult,
+} from '@/interfaces/shipping.details';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -31,18 +36,11 @@ export class PackageService {
   }
 
   async getPackageShippingPrice(id: Package['id']): Promise<any> {
-    const { packageWeight, deliveryAddress } = await this.findById(id);
+    const { packageWeight } = await this.findById(id);
 
     return this.calculateShippingCost({
-      packagePrice: 0,
       weight: packageWeight,
-      origin: 'US',
-      destination: deliveryAddress,
     });
-  }
-
-  getRawData() {
-    return this.packageRepo.query('SELECT * FROM packages');
   }
 
   create(dto: CreatePackageDto): Promise<Package> {
@@ -60,49 +58,47 @@ export class PackageService {
     this.packageRepo.remove(packageToDelete);
     return true;
   }
+  private calculateTax = (amount: number): number => amount * TAX_RATE;
 
-  private calculateShippingCost(details: ShipinngDetails) {
-    const exchangeRate = 55;
-    const baseRatePerPound = 10;
-    const airportFee = 17.52;
-    const fuelCharge = 69.08;
-    const dgaServices = 13.62;
-    const insurance = -0.01;
+  private createBreakdownItem = (
+    product: string,
+    gross: number,
+    tax: number,
+  ): CostBreakdownItem => ({
+    product,
+    gross,
+    tax,
+    net: gross + tax,
+  });
 
-    const grossFreight = baseRatePerPound * details.weight;
-    const taxFreight = grossFreight * 0.18; // Ejemplo de impuesto del 18%
-    const netFreight = grossFreight + taxFreight;
+  private calculateShippingCost = (
+    details: ShippingDetails,
+  ): ShippingCostResult => {
+    const { weight } = details;
+
+    const grossFreight = BASE_RATE_PER_POUND * weight;
+    const taxFreight = this.calculateTax(grossFreight);
 
     const totalGross =
-      grossFreight + airportFee + fuelCharge + insurance + dgaServices;
+      grossFreight +
+      FEES.AIRPORT_FEE +
+      FEES.FUEL_CHARGE +
+      FEES.INSURANCE +
+      FEES.DGA_SERVICES;
+
     const totalTax = taxFreight;
     const totalNet = totalGross + totalTax;
 
-    const totalCost = totalNet * exchangeRate;
+    const totalCost = totalNet;
 
-    const breakdown = [
-      {
-        product: 'FLETE COURIER',
-        gross: grossFreight,
-        tax: taxFreight,
-        net: netFreight,
-      },
-      { product: 'AIRPORT FEE', gross: airportFee, tax: 0, net: airportFee },
-      { product: 'COMBUSTIBLE', gross: fuelCharge, tax: 0, net: fuelCharge },
-      {
-        product: 'SEGURO NO INCLUIDO',
-        gross: insurance,
-        tax: 0,
-        net: insurance,
-      },
-      {
-        product: 'SERVICIOS DGA',
-        gross: dgaServices,
-        tax: 0,
-        net: dgaServices,
-      },
+    const breakdown: CostBreakdownItem[] = [
+      this.createBreakdownItem('FLETE COURIER', grossFreight, taxFreight),
+      this.createBreakdownItem('AIRPORT FEE', FEES.AIRPORT_FEE, 0),
+      this.createBreakdownItem('COMBUSTIBLE', FEES.FUEL_CHARGE, 0),
+      this.createBreakdownItem('SEGURO NO INCLUIDO', FEES.INSURANCE, 0),
+      this.createBreakdownItem('SERVICIOS DGA', FEES.DGA_SERVICES, 0),
     ];
 
     return { totalCost, breakdown };
-  }
+  };
 }

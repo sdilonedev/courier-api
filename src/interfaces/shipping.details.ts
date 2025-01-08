@@ -1,6 +1,15 @@
-export interface ShipinngDetails {
-  packagePrice: number;
+export interface ShippingDetails {
   weight: number;
-  origin: string;
-  destination: string;
+}
+
+export interface CostBreakdownItem {
+  product: string;
+  gross: number;
+  tax: number;
+  net: number;
+}
+
+export interface ShippingCostResult {
+  totalCost: number;
+  breakdown: CostBreakdownItem[];
 }
